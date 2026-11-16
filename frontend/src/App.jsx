@@ -7,7 +7,9 @@ const today = () => {
 };
 const nowTime = () =>
   new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-const isLiftStep = (s) => s && (s.kind === 'lift' || s.kind === 'balance');
+// A step with set rows is a loggable step (lifts, balance, and the
+// set-based mobility steps in standalone mobility workouts).
+const isLiftStep = (s) => s && !!s.sets;
 
 // Build the set rows for a step at a given set count.
 function buildRows(step, setCount) {

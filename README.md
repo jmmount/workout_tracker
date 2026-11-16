@@ -9,8 +9,10 @@ to the Health Log spreadsheet (the "Workouts" tab) in one go at the end.
 
 Workouts: Strength A and Strength B from Jason's weekly plan, each with
 jump-rope warm-up, the mobility sequence, and a balance step (balance
-practice is in every workout, per Jason's Nov 15 request). Warm-up,
-mobility and balance steps are guided but only lift sets are logged.
+practice is in every workout, per Jason's Nov 15 request), plus
+Mobility A, a standalone mobility session. Steps with set rows — lifts,
+balance, and Mobility A's mobility steps — are checked off and logged;
+the warm-up and the A/B mobility sequence are guided only.
 
 ## Run
 
@@ -26,7 +28,12 @@ link and the launch command on startup.
     npm run build                               # refresh frontend/dist
 
 Backend: Python stdlib only, port 8767 (WORKOUT_GUIDE_PORT or --port).
-Data: backend/workouts.py. Sets and reps are editable on every card and
+Workout definitions live in a SQLite database, backend/workouts.db —
+created and seeded on first run from the definitions in
+backend/workouts.py. Seeding is append-only: a new definition in
+workouts.py appends itself on the next start, and existing rows are
+never overwritten, so edits made in the database (e.g. in DBeaver)
+stick. Sets and reps are editable on every card and
 you can navigate back to previous exercises; entries are kept in the app
 until the final submit.
 

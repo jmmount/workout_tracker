@@ -1,6 +1,9 @@
 """Workout definitions for the guided workout app.
 
-Strength A and Strength B from Jason's weekly plan. Default weights and
+Strength A, Strength B and Mobility A from Jason's weekly plan.
+These definitions seed the SQLite store (backend/workouts.db, via
+workout_store.py); the app serves workouts from the database.
+Default weights and
 rep schemes reflect his Week 1 actuals (Nov 2026). Mobility and warm-up
 steps are guided but not logged; lift sets are logged to the Health Log.
 Balance practice is in every workout (Jason's request, Nov 15 2026).
@@ -38,6 +41,32 @@ BALANCE = {"name": "Single-leg balance stand", "target": "2 x 30 s per side", "k
            "sets": 2, "reps": 30, "per_side": True, "metric": "time",
            "cue": "Stand on one leg, eyes on one spot, support within reach. Wobbling is the practice working.",
            "image": "https://www.nuffieldhealth.com/local/f2/ef/43ebcdbd4ca4bfbd97211c55fd2f/single-leg-deadlift.jpg"}
+
+_MOB = {m["name"]: m for m in MOBILITY}
+
+
+def _mob(name, sets, reps, metric, per_side=False):
+    """A mobility step with set rows, so a standalone mobility session
+    can be checked off and logged like any other workout."""
+    base = _MOB[name]
+    step = {"name": name, "kind": "mobility", "cue": base["cue"],
+            "image": base["image"], "sets": sets, "reps": reps,
+            "metric": metric}
+    if per_side:
+        step["per_side"] = True
+    return step
+
+
+MOBILITY_A_STEPS = [
+    _mob("Cat-camel", 2, 8, "bodyweight"),
+    _mob("Bird-dog", 2, 6, "bodyweight", per_side=True),
+    _mob("Dead bug", 2, 8, "bodyweight", per_side=True),
+    _mob("Standing hamstring stretch", 2, 30, "time", per_side=True),
+    _mob("Half-kneeling hip-flexor stretch", 2, 30, "time", per_side=True),
+    _mob("Figure-4 stretch", 2, 30, "time", per_side=True),
+    BALANCE,
+    _mob("Child's pose", 2, 60, "time"),
+]
 
 WORKOUTS = [
     {
@@ -101,5 +130,10 @@ WORKOUTS = [
              "cue": "Cable at chest height, side-on. Press straight out, exhale, don't let it rotate you.",
              "image": "https://www.fitnessandpower.com/wp-content/uploads/2022/06/pallof-press-768x421.jpg"},
         ],
+    },
+    {
+        "id": "MOB-A", "name": "Mobility A",
+        "subtitle": "Standalone mobility: back, hips, hamstrings",
+        "steps": MOBILITY_A_STEPS,
     },
 ]

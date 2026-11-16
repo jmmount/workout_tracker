@@ -16,7 +16,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from workouts import WORKOUTS  # noqa: E402
+from workout_store import get_workouts  # noqa: E402
 
 DIST = Path(__file__).parent.parent / "frontend" / "dist"
 
@@ -120,7 +120,7 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         if self.path == "/api/workouts":
-            return self._json(200, WORKOUTS)
+            return self._json(200, get_workouts())
         if not Path(DIST, self.path.lstrip("/")).exists() and "." not in Path(self.path).name:
             self.path = "/index.html"
         super().do_GET()
