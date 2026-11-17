@@ -17,6 +17,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from workout_store import get_workouts  # noqa: E402
+import health_store  # noqa: E402
 
 DIST = Path(__file__).parent.parent / "frontend" / "dist"
 
@@ -77,6 +78,10 @@ def log_session(body):
     Body: {date, workout_id, workout_name, location, start_time,
            exercises: [{exercise, sets: [{exercise?, set_number, reps,
            metric_type, weight_lb, time_sec}]}], dry_run?}
+
+    Returns (sheet_result, warning). The same rows are also dual-written
+    to the local health.db; a local failure never breaks the sheet
+    submit — it comes back as the warning string instead.
     """
     date = body["date"]
     session = f"{date}-{body['workout_id']}"
@@ -100,7 +105,13 @@ def log_session(body):
                 "notes": s.get("notes", "Logged from Workout Guide app."),
             }
             rows.append([row[c] for c in COLUMNS])
-    return append_rows(rows, dry_run=bool(body.get("dry_run")))
+    result = append_rows(rows, dry_run=bool(body.get("dry_run")))
+    warning = None
+    try:
+        health_store.log_rows(rows)
+    except Exception as e:  # local mirror must never break the sheet submit
+        warning = f"health.db dual-write failed: {e}"
+    return result, warning
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -120,7 +131,7 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         if self.path == "/api/workouts":
-            return self._json(200, get_workouts())
+            return self._json(200, health_store.suggested_overlay(get_workouts()))
         if not Path(DIST, self.path.lstrip("/")).exists() and "." not in Path(self.path).name:
             self.path = "/index.html"
         super().do_GET()
@@ -130,9 +141,12 @@ class Handler(SimpleHTTPRequestHandler):
             return self._json(404, {"ok": False, "error": "unknown_path"})
         try:
             body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
-            result = log_session(body)
+            result, warning = log_session(body)
             n = sum(len(e["sets"]) for e in body["exercises"])
-            self._json(200, {"ok": True, "rows": n, "result": result})
+            resp = {"ok": True, "rows": n, "result": result}
+            if warning:
+                resp["health_db_warning"] = warning
+            self._json(200, resp)
         except Exception as e:  # surface the real error to the app
             self._json(500, {"ok": False, "error": str(e)})
 
