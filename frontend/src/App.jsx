@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const today = () => {
   const d = new Date();
@@ -7,6 +7,41 @@ const today = () => {
 };
 const nowTime = () =>
   new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+// Stopwatch for time-based sets: Start runs it, Stop records the
+// elapsed seconds as the set's value and checks the set off.
+function TimerButton({ onStop }) {
+  const [running, setRunning] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
+  const startRef = useRef(0);
+  const intRef = useRef(null);
+  const clear = () => { if (intRef.current) clearInterval(intRef.current); intRef.current = null; };
+  useEffect(() => clear, []);
+  const fmt = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+  const toggle = () => {
+    if (running) {
+      clear();
+      const secs = Math.max(1, Math.round((Date.now() - startRef.current) / 1000));
+      setRunning(false);
+      setElapsed(secs);
+      onStop(secs);
+    } else {
+      startRef.current = Date.now();
+      setElapsed(0);
+      setRunning(true);
+      intRef.current = setInterval(
+        () => setElapsed(Math.floor((Date.now() - startRef.current) / 1000)), 250);
+    }
+  };
+  return (
+    <span className="timerwrap">
+      {(running || elapsed > 0) && <span className="timerlive">{fmt(elapsed)}</span>}
+      <button className={`timerbtn ${running ? 'running' : ''}`} onClick={toggle}>
+        {running ? 'Stop' : 'Timer'}
+      </button>
+    </span>
+  );
+}
+
 // A step with set rows is a loggable step (lifts, balance, and the
 // set-based mobility steps in standalone mobility workouts).
 const isLiftStep = (s) => s && !!s.sets;
@@ -220,6 +255,9 @@ export default function App() {
                   <span className="val">{r.value}{step.metric === 'time' ? 's' : ''}</span>
                   <button onClick={() => setRow(r.key, 'value', r.value + 1)}>+</button>
                 </span>
+                {step.metric === 'time' && (
+                  <TimerButton onStop={(secs) => { setRow(r.key, 'value', secs); patchCur({ done: { ...cur.done, [r.key]: true } }); }} />
+                )}
                 {step.metric === 'weight' && (
                   <span className="stepper">
                     <button onClick={() => setRow(r.key, 'weight', Math.max(0, r.weight - 5))}>−</button>

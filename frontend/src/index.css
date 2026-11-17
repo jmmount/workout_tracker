@@ -35,3 +35,8 @@ h2 { font-size: 26px; margin: 4px 0; }
 .setsedit { display: flex; align-items: center; gap: 12px; padding: 8px 0 4px; color: #9fb0bc; font-weight: 600; }
 .ok { color: #4caf7d; font-weight: 600; }
 .err { color: #ff8a7a; }
+
+.timerwrap { display: inline-flex; align-items: center; gap: 6px; }
+.timerlive { font-variant-numeric: tabular-nums; font-weight: 600; min-width: 38px; text-align: right; }
+.timerbtn { height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid #3a4a56; background: #1f2931; color: #e8eef2; cursor: pointer; font-size: 14px; }
+.timerbtn.running { background: #b03a2e; border-color: #b03a2e; color: #fff; }
