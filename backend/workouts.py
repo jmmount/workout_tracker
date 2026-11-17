@@ -34,6 +34,7 @@ MOBILITY = [
 ]
 
 WARMUP = {"name": "Jump rope", "target": "5 minutes", "kind": "warmup",
+          "sets": 1, "reps": 300, "metric": "time",
           "cue": "Easy rhythm, land soft. This is a warm-up, not a workout.",
           "image": "https://fitnessvolt.com/wp-content/uploads/2020/11/jump-rope.jpg.webp"}
 
@@ -57,6 +58,16 @@ def _mob(name, sets, reps, metric, per_side=False):
     return step
 
 
+MOBILITY_STR = [
+    _MOB["Cat-camel"],
+    _MOB["Bird-dog"],
+    _MOB["Dead bug"],
+    _mob("Standing hamstring stretch", 2, 30, "time", per_side=True),
+    _mob("Half-kneeling hip-flexor stretch", 2, 30, "time", per_side=True),
+    _mob("Figure-4 stretch", 2, 30, "time", per_side=True),
+    _mob("Child's pose", 2, 60, "time"),
+]
+
 MOBILITY_A_STEPS = [
     _mob("Cat-camel", 2, 8, "bodyweight"),
     _mob("Bird-dog", 2, 6, "bodyweight", per_side=True),
@@ -71,7 +82,7 @@ MOBILITY_A_STEPS = [
 WORKOUTS = [
     {
         "id": "STR-A", "name": "Strength A", "subtitle": "Bench-led upper body",
-        "steps": [WARMUP, *MOBILITY, BALANCE,
+        "steps": [WARMUP, *MOBILITY_STR, BALANCE,
             {"name": "Bench press", "kind": "lift", "sets": 4, "reps": 6,
              "metric": "weight", "default_weight": 135,
              "cue": "Feet planted, shoulder blades pinched, bar to mid-chest, press up and slightly back.",
@@ -104,7 +115,7 @@ WORKOUTS = [
     },
     {
         "id": "STR-B", "name": "Strength B", "subtitle": "Deadlift-led legs and hinge",
-        "steps": [WARMUP, *MOBILITY, BALANCE,
+        "steps": [WARMUP, *MOBILITY_STR, BALANCE,
             {"name": "Trap-bar deadlift", "kind": "lift", "sets": 3, "reps": 5,
              "metric": "weight", "default_weight": 95,
              "cue": "High handles. Push the floor away, stand tall. Stop if pain radiates below the knee.",
