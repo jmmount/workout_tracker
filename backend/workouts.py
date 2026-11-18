@@ -79,10 +79,12 @@ MOBILITY_A_STEPS = [
     _mob("Child's pose", 2, 60, "time"),
 ]
 
+MOBILITY_STR_A = [m for m in MOBILITY_STR if m["name"] != "Dead bug"]
+
 WORKOUTS = [
     {
         "id": "STR-A", "name": "Strength A", "subtitle": "Bench-led upper body",
-        "steps": [WARMUP, *MOBILITY_STR, BALANCE,
+        "steps": [*MOBILITY_STR_A, WARMUP, BALANCE,
             {"name": "Bench press", "kind": "lift", "sets": 4, "reps": 6,
              "metric": "weight", "default_weight": 135,
              "cue": "Feet planted, shoulder blades pinched, bar to mid-chest, press up and slightly back.",
@@ -115,7 +117,7 @@ WORKOUTS = [
     },
     {
         "id": "STR-B", "name": "Strength B", "subtitle": "Deadlift-led legs and hinge",
-        "steps": [WARMUP, *MOBILITY_STR, BALANCE,
+        "steps": [*MOBILITY_STR, WARMUP, BALANCE,
             {"name": "Trap-bar deadlift", "kind": "lift", "sets": 3, "reps": 5,
              "metric": "weight", "default_weight": 95,
              "cue": "High handles. Push the floor away, stand tall. Stop if pain radiates below the knee.",

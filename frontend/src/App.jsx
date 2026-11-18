@@ -17,27 +17,30 @@ function TimerButton({ onStop }) {
   const clear = () => { if (intRef.current) clearInterval(intRef.current); intRef.current = null; };
   useEffect(() => clear, []);
   const fmt = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-  const toggle = () => {
-    if (running) {
-      clear();
-      const secs = Math.max(1, Math.round((Date.now() - startRef.current) / 1000));
-      setRunning(false);
-      setElapsed(secs);
-      onStop(secs);
-    } else {
-      startRef.current = Date.now();
-      setElapsed(0);
-      setRunning(true);
-      intRef.current = setInterval(
-        () => setElapsed(Math.floor((Date.now() - startRef.current) / 1000)), 250);
-    }
+  const start = () => {
+    startRef.current = Date.now();
+    setElapsed(0);
+    setRunning(true);
+    intRef.current = setInterval(
+      () => setElapsed(Math.floor((Date.now() - startRef.current) / 1000)), 250);
+  };
+  const stop = () => {
+    clear();
+    const secs = Math.max(1, Math.round((Date.now() - startRef.current) / 1000));
+    setRunning(false);
+    setElapsed(secs);
+    onStop(secs);
   };
   return (
     <span className="timerwrap">
-      {(running || elapsed > 0) && <span className="timerlive">{fmt(elapsed)}</span>}
-      <button className={`timerbtn ${running ? 'running' : ''}`} onClick={toggle}>
-        {running ? 'Stop' : 'Timer'}
-      </button>
+      {(!running && elapsed > 0) && <span className="timerlive">{fmt(elapsed)}</span>}
+      <button className="timerbtn" onClick={start}>Timer</button>
+      {running && (
+        <div className="timerfull" onClick={stop}>
+          <div className="timerfulltime">{fmt(elapsed)}</div>
+          <div className="timerfullhint">Tap anywhere to stop</div>
+        </div>
+      )}
     </span>
   );
 }

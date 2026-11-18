@@ -40,3 +40,7 @@ h2 { font-size: 26px; margin: 4px 0; }
 .timerlive { font-variant-numeric: tabular-nums; font-weight: 600; min-width: 38px; text-align: right; }
 .timerbtn { height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid #3a4a56; background: #1f2931; color: #e8eef2; cursor: pointer; font-size: 14px; }
 .timerbtn.running { background: #b03a2e; border-color: #b03a2e; color: #fff; }
+
+.timerfull { position: fixed; inset: 0; z-index: 999; background: rgba(8, 12, 16, 0.96); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
+.timerfulltime { color: #fff; font-size: 26vw; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
+.timerfullhint { color: #9fb2bf; font-size: 18px; margin-top: 24px; }
