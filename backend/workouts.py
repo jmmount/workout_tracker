@@ -96,7 +96,7 @@ WORKOUTS = [
              "cue": "Flat back, row to the hip, not the chest. No twisting.",
              "image": "https://www.sfd.pl/SFD/articles/content/2019/11/20/2019-11-205af7f7861d954102b98f8c7c365dbef4.jpg"},
             {"name": "Overhead press", "kind": "lift", "sets": 3, "reps": 8,
-             "metric": "weight", "default_weight": 17.5,
+             "metric": "weight", "default_weight": 20,
              "cue": "Seated dumbbells. Ribs down, press straight up, don't lean back.",
              "image": "https://cdn.fitsociety.io/training/my_exercises/4ea140ad-8482-46d6-9827-c28f09702bf9_seated_dumbbell_shoulder_press-3.jpg"},
             {"name": "Dead bug", "kind": "lift", "sets": 3, "reps": 8,

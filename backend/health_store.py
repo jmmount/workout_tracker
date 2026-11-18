@@ -8,6 +8,7 @@ The spreadsheet stays canonical for now (Nov 16, 2026): server.py still
 submits every session to the sheet first and dual-writes the same rows
 here second. See REFACTOR_NOTES.md for the cutover decision.
 """
+import math
 import sqlite3
 from pathlib import Path
 
@@ -142,6 +143,8 @@ def suggested_overlay(workouts):
     """Reset each step's defaults from the last completed performance
     (Jason's rule, Nov 16 2026): weight +5 lb under 100 lb, +10 lb at
     100 lb and up; time +5 s; bodyweight reps = last time's best set.
+    Suggested weights always round UP to the next multiple of 5 lb
+    (Jason's rule, Nov 17 2026: 17.5 -> 20, so 22.5 -> 25).
     Steps with no logged history keep their definition defaults. The
     log is the Health Log's data (sheet imported + dual-written), so
     every Submit moves the next session's defaults."""
@@ -157,8 +160,9 @@ def suggested_overlay(workouts):
             if not perf:
                 continue
             if s.get("metric") == "weight" and perf["weight"]:
-                s["default_weight"] = perf["weight"] + (
+                raw = perf["weight"] + (
                     10 if perf["weight"] >= 100 else 5)
+                s["default_weight"] = math.ceil(raw / 5) * 5
             elif s.get("metric") == "time" and perf["time"]:
                 s["reps"] = int(perf["time"]) + 5
             elif s.get("metric") == "bodyweight" and perf["reps"]:
