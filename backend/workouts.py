@@ -92,7 +92,7 @@ WORKOUTS = [
              "cue": "Full hang to chin over the bar. Add weight only when every set is clean.",
              "image": "https://iascfitness.org/wp-content/uploads/2023/07/concept-power-strength-healthy-lifestyle-sport-powerful-attractive-muscular-man-gym.jpg"},
             {"name": "Dumbbell row", "kind": "lift", "sets": 3, "reps": 10,
-             "metric": "weight", "default_weight": 25,
+             "per_side": True, "metric": "weight", "default_weight": 25,
              "cue": "Flat back, row to the hip, not the chest. No twisting.",
              "image": "https://www.sfd.pl/SFD/articles/content/2019/11/20/2019-11-205af7f7861d954102b98f8c7c365dbef4.jpg"},
             {"name": "Overhead press", "kind": "lift", "sets": 3, "reps": 8,
