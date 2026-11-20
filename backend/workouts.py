@@ -80,10 +80,6 @@ MOBILITY_A_STEPS = [
 ]
 
 CORE_FINISH = [
-    {"name": "Dead bug", "kind": "lift", "sets": 1, "reps": 8,
-     "per_side": True, "metric": "bodyweight", "default_weight": None,
-     "cue": "Core finisher — one more set on top of the mobility block. Low back pressed into the floor the whole time.",
-     "image": "https://traineatrepeat.com/exercise-images/dead-bug.webp"},
     {"name": "Side plank", "kind": "lift", "sets": 2, "reps": 30,
      "per_side": True, "metric": "time", "default_weight": None,
      "cue": "Forearm down, body in one straight line, hips stacked. Bracing only, no bending or twisting.",
@@ -94,7 +90,10 @@ CORE_FINISH = [
      "image": "https://sp-ao.shortpixel.ai/client/to_webp,q_glossy,ret_img,w_800,h_450/https://yoga-lava.com/yogafull/wp-content/uploads/2023/08/B-53-002.jpeg"},
 ]
 
-MOBILITY_B_STEPS = [*MOBILITY_A_STEPS, *CORE_FINISH]
+MOBILITY_B_STEPS = [
+    {**s, "sets": 3} if s["name"] == "Dead bug" else s
+    for s in MOBILITY_A_STEPS
+] + CORE_FINISH
 
 MOBILITY_STR_A = [m for m in MOBILITY_STR if m["name"] != "Dead bug"]
 
