@@ -1,6 +1,6 @@
 """Workout definitions for the guided workout app.
 
-Strength A, Strength B and Mobility A from Jason's weekly plan.
+Strength A, Strength B, Mobility A and Mobility B from Jason's weekly plan.
 These definitions seed the SQLite store (backend/workouts.db, via
 workout_store.py); the app serves workouts from the database.
 Default weights and
@@ -79,6 +79,23 @@ MOBILITY_A_STEPS = [
     _mob("Child's pose", 2, 60, "time"),
 ]
 
+CORE_FINISH = [
+    {"name": "Dead bug", "kind": "lift", "sets": 1, "reps": 8,
+     "per_side": True, "metric": "bodyweight", "default_weight": None,
+     "cue": "Core finisher — one more set on top of the mobility block. Low back pressed into the floor the whole time.",
+     "image": "https://traineatrepeat.com/exercise-images/dead-bug.webp"},
+    {"name": "Side plank", "kind": "lift", "sets": 2, "reps": 30,
+     "per_side": True, "metric": "time", "default_weight": None,
+     "cue": "Forearm down, body in one straight line, hips stacked. Bracing only, no bending or twisting.",
+     "image": "https://media1.popsugar-assets.com/files/thumbor/Si7M1kTlwTOEokXzjw0WGOGvXig/fit-in/1024x1024/filters:format_auto-!!-:strip_icc-!!-/2023/01/31/730/n/1922729/tmp_mKt4pR_b820ef43be2c0d52_Side-Plank.jpg"},
+    {"name": "Plank", "kind": "lift", "sets": 2, "reps": 45,
+     "metric": "time", "default_weight": None,
+     "cue": "One long line, ribs down, glutes on. Stop the set if your low back sags.",
+     "image": "https://sp-ao.shortpixel.ai/client/to_webp,q_glossy,ret_img,w_800,h_450/https://yoga-lava.com/yogafull/wp-content/uploads/2023/08/B-53-002.jpeg"},
+]
+
+MOBILITY_B_STEPS = [*MOBILITY_A_STEPS, *CORE_FINISH]
+
 MOBILITY_STR_A = [m for m in MOBILITY_STR if m["name"] != "Dead bug"]
 
 WORKOUTS = [
@@ -148,5 +165,10 @@ WORKOUTS = [
         "id": "MOB-A", "name": "Mobility A",
         "subtitle": "Standalone mobility: back, hips, hamstrings",
         "steps": MOBILITY_A_STEPS,
+    },
+    {
+        "id": "MOB-B", "name": "Mobility B",
+        "subtitle": "Mobility A plus a back-friendly core finisher — home session",
+        "steps": MOBILITY_B_STEPS,
     },
 ]
