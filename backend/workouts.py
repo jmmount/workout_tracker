@@ -27,7 +27,7 @@ MOBILITY = [
      "image": "https://media.flexor.app/media/exercises/images/kneeling-psoas.webp"},
     {"name": "Figure-4 stretch", "target": "30 s per side", "kind": "mobility",
      "cue": "On your back, ankle over opposite knee, draw the leg in until the hip and glute let go.",
-     "image": "https://westretch.ca/images/blog/Supine-Figure-Four-Stretch.webp"},
+     "image": "https://i.garagegymreviews.com/228/829/577/7/figure-four-stretch-lying-down.webp"},
     {"name": "Child's pose", "target": "60 s", "kind": "mobility",
      "cue": "Sit back toward your heels, arms long, breathe into your back.",
      "image": "https://cdn.prod.website-files.com/670a59845f0989763e175227/670a59845f0989763e1761aa_All-about-Childs-Pose-p-1080.jpg"},
