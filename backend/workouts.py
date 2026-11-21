@@ -100,7 +100,7 @@ MOBILITY_STR_A = [m for m in MOBILITY_STR if m["name"] != "Dead bug"]
 WORKOUTS = [
     {
         "id": "STR-A", "name": "Strength A", "subtitle": "Bench-led upper body",
-        "steps": [*MOBILITY_STR_A, WARMUP, BALANCE,
+        "steps": [WARMUP, *MOBILITY_STR_A, BALANCE,
             {"name": "Bench press", "kind": "lift", "sets": 4, "reps": 6,
              "metric": "weight", "default_weight": 135,
              "cue": "Feet planted, shoulder blades pinched, bar to mid-chest, press up and slightly back.",
@@ -133,11 +133,11 @@ WORKOUTS = [
     },
     {
         "id": "STR-B", "name": "Strength B", "subtitle": "Deadlift-led legs and hinge",
-        "steps": [*MOBILITY_STR, WARMUP, BALANCE,
-            {"name": "Trap-bar deadlift", "kind": "lift", "sets": 3, "reps": 5,
+        "steps": [WARMUP, *MOBILITY_STR, BALANCE,
+            {"name": "Barbell deadlift", "kind": "lift", "sets": 3, "reps": 5,
              "metric": "weight", "default_weight": 95,
-             "cue": "High handles. Push the floor away, stand tall. Stop if pain radiates below the knee.",
-             "image": "https://www.mensjournal.com/.image/NDI6MDAwMDAwMDAxMDIyOTkx/trap-bar-deadlift.png?profile=w828&x=50&y=50"},
+             "cue": "Push the floor away, stand tall. Stop if pain radiates below the knee.",
+             "image": "https://lirp.cdn-website.com/60952163/dms3rep/multi/opt/Deadlift-1920w.jpg"},
             {"name": "Goblet squat", "kind": "lift", "sets": 3, "reps": 8,
              "metric": "weight", "default_weight": 35,
              "cue": "Kettlebell by the horns at your chest. Sit between your heels; depth stops before your pelvis tucks.",
@@ -156,8 +156,8 @@ WORKOUTS = [
              "image": "https://www.nuffieldhealth.com/local/f2/ef/43ebcdbd4ca4bfbd97211c55fd2f/single-leg-deadlift.jpg"},
             {"name": "Pallof press", "kind": "lift", "sets": 2, "reps": 12,
              "per_side": True, "metric": "weight", "default_weight": 30,
-             "cue": "Cable at chest height, side-on. Press straight out, exhale, don't let it rotate you.",
-             "image": "https://www.fitnessandpower.com/wp-content/uploads/2022/06/pallof-press-768x421.jpg"},
+             "cue": "Cable at chest height, side-on. Press straight out, exhale, don't let it rotate you. Stand sideways to the machine, cable at chest height, handle at the center of your chest. Brace and press straight out without letting the cable rotate you. Finish the set, then face the other way.",
+             "image": "https://cdn.muscleandstrength.com/sites/default/files/pallof-press.jpg"},
         ],
     },
     {
