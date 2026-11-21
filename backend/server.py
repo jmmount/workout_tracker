@@ -2,8 +2,10 @@
 """Workout Guide — local backend.
 
 Serves the guided-workout frontend on one port and logs completed lift
-sets to the Health Log spreadsheet (same append path as
-~/workspace/health/code/populate_workout.py).
+sets to the local health.db (the primary store since the Nov 21, 2026
+step-2 cutover). Each submit is also exported to the Health Log
+spreadsheet afterwards, best-effort — an export failure never fails
+the submit.
 
 Run:  python3 backend/server.py [--port 8767]
 """
@@ -73,15 +75,20 @@ def append_rows(rows, dry_run=False):
 
 
 def log_session(body):
-    """Append every completed exercise's sets to the Health Log, once.
+    """Log every completed exercise's sets, once.
 
     Body: {date, workout_id, workout_name, location, start_time,
            exercises: [{exercise, sets: [{exercise?, set_number, reps,
            metric_type, weight_lb, time_sec}]}], dry_run?}
 
-    Returns (sheet_result, warning). The same rows are also dual-written
-    to the local health.db; a local failure never breaks the sheet
-    submit — it comes back as the warning string instead.
+    The rows are written to the local health.db FIRST — that write is
+    the committed success, and its failure raises. The same rows are
+    then exported to the Health Log spreadsheet, best-effort: an
+    export failure is logged to stderr and reported, never raised.
+    (dry_run skips only the export; it is a test path, unused by the
+    frontend.)
+
+    Returns (export_result, exported, export_error).
     """
     date = body["date"]
     session = f"{date}-{body['workout_id']}"
@@ -105,13 +112,16 @@ def log_session(body):
                 "notes": s.get("notes", "Logged from Workout Guide app."),
             }
             rows.append([row[c] for c in COLUMNS])
-    result = append_rows(rows, dry_run=bool(body.get("dry_run")))
-    warning = None
+    health_store.log_rows(rows)  # primary write; a failure here raises
+    result, exported, export_error = None, False, None
     try:
-        health_store.log_rows(rows)
-    except Exception as e:  # local mirror must never break the sheet submit
-        warning = f"health.db dual-write failed: {e}"
-    return result, warning
+        result = append_rows(rows, dry_run=bool(body.get("dry_run")))
+        exported = True
+    except Exception as e:  # export is best-effort; the DB row stands
+        export_error = str(e)
+        print(f"sheet export failed for session {session}: {e}",
+              file=sys.stderr, flush=True)
+    return result, exported, export_error
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -136,17 +146,60 @@ class Handler(SimpleHTTPRequestHandler):
             self.path = "/index.html"
         super().do_GET()
 
+    def _log_food(self, body):
+        """POST /api/log/food: {date, meal, item, kcal} -> one food row."""
+        if not isinstance(body, dict):
+            raise ValueError("body must be a JSON object")
+        missing = [k for k in ("date", "meal", "item", "kcal")
+                   if body.get(k) in (None, "")]
+        if missing:
+            raise ValueError(f"missing field(s): {', '.join(missing)}")
+        kcal = body["kcal"]
+        if isinstance(kcal, bool) or not isinstance(kcal, (int, float)):
+            raise ValueError("kcal must be a number")
+        return health_store.log_food_rows(
+            [[body["date"], body["meal"], body["item"], kcal]])
+
+    def _log_workout(self, body):
+        """POST /api/log/workout: {rows: [{...COLUMNS fields...}]}."""
+        if not isinstance(body, dict) or not isinstance(body.get("rows"), list) \
+                or not body["rows"]:
+            raise ValueError("body must be {rows: [row, ...]}")
+        rows = []
+        for i, r in enumerate(body["rows"]):
+            if not isinstance(r, dict):
+                raise ValueError(f"rows[{i}] must be an object")
+            missing = [c for c in COLUMNS if c not in r]
+            if missing:
+                raise ValueError(
+                    f"rows[{i}] missing field(s): {', '.join(missing)}")
+            rows.append([r[c] for c in COLUMNS])
+        return health_store.log_rows(rows)
+
     def do_POST(self):
-        if self.path != "/api/log-session":
-            return self._json(404, {"ok": False, "error": "unknown_path"})
         try:
-            body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
-            result, warning = log_session(body)
-            n = sum(len(e["sets"]) for e in body["exercises"])
-            resp = {"ok": True, "rows": n, "result": result}
-            if warning:
-                resp["health_db_warning"] = warning
-            self._json(200, resp)
+            length = int(self.headers["Content-Length"])
+            body = json.loads(self.rfile.read(length))
+        except (TypeError, ValueError):
+            return self._json(400, {"ok": False, "error": "invalid JSON body"})
+        try:
+            if self.path == "/api/log-session":
+                result, exported, export_error = log_session(body)
+                n = sum(len(e["sets"]) for e in body["exercises"])
+                resp = {"ok": True, "rows": n, "result": result,
+                        "exported": exported}
+                if export_error:
+                    resp["export_error"] = export_error
+                return self._json(200, resp)
+            if self.path == "/api/log/food":
+                return self._json(200, {"ok": True,
+                                        "inserted": self._log_food(body)})
+            if self.path == "/api/log/workout":
+                return self._json(200, {"ok": True,
+                                        "inserted": self._log_workout(body)})
+            return self._json(404, {"ok": False, "error": "unknown_path"})
+        except ValueError as e:
+            self._json(400, {"ok": False, "error": str(e)})
         except Exception as e:  # surface the real error to the app
             self._json(500, {"ok": False, "error": str(e)})
 
