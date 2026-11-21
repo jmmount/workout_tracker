@@ -4,9 +4,11 @@ Mirrors the Health Log spreadsheet's two tabs:
 - workout_rows: the 15 Workouts columns, same names and order.
 - food:         the 4 Food columns (date, meal, item, estimated_kcal).
 
-The spreadsheet stays canonical for now (Nov 16, 2026): server.py still
-submits every session to the sheet first and dual-writes the same rows
-here second. See REFACTOR_NOTES.md for the cutover decision.
+Since the step-2 cutover (Nov 21, 2026) this DB is the primary store:
+server.py writes sessions here first and exports them to the sheet
+afterwards, best-effort. import_health_log.py still clear-and-reloads
+from the sheet, so it would wipe local-only rows — don't run it
+blindly anymore. See REFACTOR_NOTES.md for the cutover history.
 """
 import math
 import sqlite3
