@@ -33,7 +33,16 @@ CREATE TABLE IF NOT EXISTS steps (
     per_side INTEGER NOT NULL DEFAULT 0,
     metric TEXT,
     default_weight REAL,
+    exercise_id TEXT,
+    cue_override TEXT,
     PRIMARY KEY (workout_id, pos)
+);
+CREATE TABLE IF NOT EXISTS exercises (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,
+    kind TEXT,
+    cue TEXT,
+    image TEXT
 );
 """
 
@@ -42,6 +51,57 @@ def _connect():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
+
+
+def _slug(name):
+    out, dash = [], False
+    for ch in name.lower():
+        if ch.isalnum():
+            out.append(ch)
+            dash = False
+        elif not dash and out:
+            out.append("-")
+            dash = True
+    return "".join(out).strip("-")
+
+
+def _normalize_exercises(conn):
+    """One exercises row per distinct step name; steps link to it.
+
+    Canonical cue = the most common cue for the name (ties: the shorter
+    one). A step whose cue differs keeps its own in cue_override, so
+    per-workout cue variants survive. Idempotent; existing exercises
+    rows are never overwritten.
+    """
+    cols = {r[1] for r in conn.execute("PRAGMA table_info(steps)")}
+    for col in ("exercise_id", "cue_override"):
+        if col not in cols:
+            conn.execute(f"ALTER TABLE steps ADD COLUMN {col} TEXT")
+    names = [r[0] for r in conn.execute(
+        "SELECT DISTINCT name FROM steps ORDER BY name")]
+    for name in names:
+        rows = conn.execute(
+            "SELECT kind, cue, image FROM steps WHERE name = ?",
+            (name,)).fetchall()
+        cues = [r[1] for r in rows if r[1]]
+        canonical = None
+        if cues:
+            canonical = min(set(cues),
+                            key=lambda c: (-cues.count(c), len(c)))
+        kind = next((r[0] for r in rows if r[0]), None)
+        image = next((r[2] for r in rows if r[2]), None)
+        conn.execute(
+            "INSERT OR IGNORE INTO exercises (id, name, kind, cue, image)"
+            " VALUES (?, ?, ?, ?, ?)",
+            (_slug(name), name, kind, canonical, image))
+        conn.execute(
+            "UPDATE steps SET exercise_id = ? WHERE name = ?",
+            (_slug(name), name))
+        if canonical is not None:
+            conn.execute(
+                "UPDATE steps SET cue_override = cue WHERE name = ?"
+                " AND cue IS NOT NULL AND cue != ?"
+                " AND cue_override IS NULL", (name, canonical))
 
 
 def ensure_db():
@@ -67,6 +127,7 @@ def ensure_db():
                      s.get("sets"), s.get("reps"),
                      1 if s.get("per_side") else 0, s.get("metric"),
                      s.get("default_weight")))
+        _normalize_exercises(conn)
         conn.commit()
 
 
@@ -79,10 +140,19 @@ def get_workouts():
                 "SELECT * FROM workouts ORDER BY sort, id"):
             steps = []
             for s in conn.execute(
-                    "SELECT * FROM steps WHERE workout_id = ?"
-                    " ORDER BY pos", (w["id"],)):
-                step = {"name": s["name"], "kind": s["kind"],
-                        "cue": s["cue"], "image": s["image"]}
+                    "SELECT s.*, e.name AS ex_name, e.kind AS ex_kind,"
+                    " e.image AS ex_image,"
+                    " COALESCE(s.cue_override, e.cue) AS ex_cue"
+                    " FROM steps s"
+                    " LEFT JOIN exercises e ON e.id = s.exercise_id"
+                    " WHERE s.workout_id = ?"
+                    " ORDER BY s.pos", (w["id"],)):
+                step = {"name": s["ex_name"] or s["name"],
+                        "kind": s["kind"] if s["kind"] is not None
+                        else s["ex_kind"],
+                        "cue": s["ex_cue"] if s["ex_cue"] is not None
+                        else s["cue"],
+                        "image": s["ex_image"] or s["image"]}
                 for key in ("target", "sets", "reps", "metric"):
                     if s[key] is not None:
                         step[key] = s[key]
